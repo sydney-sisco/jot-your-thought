@@ -31,3 +31,5 @@ const server = app.listen(port, () => {
 
 const io = require('./utils/socket')(server);
 require('./features/socketPing')(io);
+
+require('./features/thoughts')(io);
