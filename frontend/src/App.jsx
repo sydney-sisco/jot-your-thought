@@ -3,12 +3,14 @@ import { socket } from './utils/socket'
 import futureLogo from '/future.svg'
 import './App.css'
 import Dexie from 'dexie';
+import { usePersistence } from './hooks/usePersistence';
 
 const db = new Dexie("ThoughtsDB");
 db.version(1).stores({ thoughts: "++id,text" });
 
 function App() {
 
+  const { deviceId } = usePersistence();
   const [thoughts, setThoughts] = useState([]);
   const [input, setInput] = useState("");
 
@@ -22,9 +24,24 @@ function App() {
 
   const addThought = async (event) => {
     event.preventDefault();
+
     if (!input.trim()) return;
-    await db.thoughts.add({ text: input });
+
+    const timestamp = new Date().toISOString();
+    
+    const thought = {
+      id: timestamp,
+      text: input.trim(),
+      deviceId: deviceId,
+      timestamp: timestamp,
+    };
+    
+    await db.thoughts.add(thought);
+
+    socket.emit("new thought", thought);
+    
     setInput("");
+
     const updatedThoughts = await db.thoughts.toArray();
     setThoughts(updatedThoughts);
   };
@@ -52,7 +69,7 @@ function App() {
         <ul>
           {thoughts.map((thought) => (
             <li key={thought.id}>{thought.text}</li>
-          ))}
+          )).reverse()}
         </ul>
       </div>
     </>
