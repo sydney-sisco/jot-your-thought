@@ -4,6 +4,11 @@ import futureLogo from '/future.svg'
 import './App.css'
 import Dexie from 'dexie';
 import { usePersistence } from './hooks/usePersistence';
+import Login from './components/Login';
+import { Jot } from './components/Jot';
+import { Thoughts } from './components/Thoughts';
+
+import { Link, Route } from "wouter";
 
 const db = new Dexie("ThoughtsDB");
 db.version(1).stores({ thoughts: "++id,text" });
@@ -12,7 +17,6 @@ function App() {
 
   const { deviceId } = usePersistence();
   const [thoughts, setThoughts] = useState([]);
-  const [input, setInput] = useState("");
 
   useEffect(() => {
     const loadThoughts = async () => {
@@ -22,10 +26,7 @@ function App() {
     loadThoughts();
   }, []);
 
-  const addThought = async (event) => {
-    event.preventDefault();
-
-    if (!input.trim()) return;
+  const addThought = async (input) => {
 
     const timestamp = new Date().toISOString();
     
@@ -39,8 +40,6 @@ function App() {
     await db.thoughts.add(thought);
 
     socket.emit("new thought", thought);
-    
-    setInput("");
 
     const updatedThoughts = await db.thoughts.toArray();
     setThoughts(updatedThoughts);
@@ -48,30 +47,18 @@ function App() {
 
   return (
     <>
+      <Link href="/login">
+        <a className="link">Login</a>
+      </Link>
+      <Route path="/login">Login</Route>
       <div>
         <a href="https://github.com/sydney-sisco/jot-your-thought" target="_blank">
           <img src={futureLogo} className="logo" alt="future logo" />
         </a>
       </div>
       <h1>Jot Your Thought</h1>
-      <div className="card">
-        <form onSubmit={addThought}>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            rows="4"
-            placeholder="Write your thought here..."
-          ></textarea>
-          <button type="submit">Save</button>
-        </form>
-      </div>
-      <div className="card">
-        <ul>
-          {thoughts.map((thought) => (
-            <li key={thought.id}>{thought.text}</li>
-          )).reverse()}
-        </ul>
-      </div>
+      <Jot addThought={addThought} />
+      <Thoughts thoughts={thoughts} />
     </>
   )
 }
