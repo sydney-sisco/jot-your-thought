@@ -47,18 +47,20 @@ function App() {
 
   return (
     <>
+      <Link href="/">
+        <a><img src={futureLogo} className="logo" alt="future logo" /></a>
+      </Link>
+      <h1>Jot Your Thought</h1>
       <Link href="/login">
         <a className="link">Login</a>
       </Link>
-      <Route path="/login">Login</Route>
-      <div>
-        <a href="https://github.com/sydney-sisco/jot-your-thought" target="_blank">
-          <img src={futureLogo} className="logo" alt="future logo" />
-        </a>
-      </div>
-      <h1>Jot Your Thought</h1>
-      <Jot addThought={addThought} />
-      <Thoughts thoughts={thoughts} />
+      <Route path="/login">
+        <Login />
+      </Route>
+      <Route path="/">
+        <Jot addThought={addThought} />
+        <Thoughts thoughts={thoughts} />
+      </Route>
     </>
   )
 }
