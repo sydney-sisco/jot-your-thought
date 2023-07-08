@@ -1,9 +1,21 @@
 require('dotenv').config()
 const express = require('express')
 const app = express()
+app.use(express.json());
+var session = require('express-session');
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: true }
+}));
+
 const path = require('path');
 const port = process.env.PORT || 3001
 const APP_NAME = process.env.APP_NAME || 'webapp-template'
+
+require('./features/passport')(app);
 
 app.get('/api', (req, res) => {
   res.send('Hello World from API!')
