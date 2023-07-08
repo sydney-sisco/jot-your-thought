@@ -5,6 +5,7 @@ import './App.css'
 import Dexie from 'dexie';
 import { usePersistence } from './hooks/usePersistence';
 import Login from './components/Login';
+import Register from './components/Register';
 import { Jot } from './components/Jot';
 import { Thoughts } from './components/Thoughts';
 
@@ -54,8 +55,14 @@ function App() {
       <Link href="/login">
         <a className="link">Login</a>
       </Link>
+      <Link href="/register">
+        <a className="link">Register</a>
+      </Link>
       <Route path="/login">
         <Login />
+      </Route>
+      <Route path="/register">
+        <Register />
       </Route>
       <Route path="/">
         <Jot addThought={addThought} />
