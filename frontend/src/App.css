@@ -45,7 +45,7 @@ form {
   flex-direction: column;
 }
 
-textarea {
+textarea, input {
   width: 100%;
   resize: none;
   margin-bottom: 1rem;

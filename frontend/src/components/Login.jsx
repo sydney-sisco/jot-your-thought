@@ -22,7 +22,7 @@ function Login() {
   }
 
   return (
-    <div>
+    <div className="card">
       <form onSubmit={handleSubmit}>
         <label>
           Username:
@@ -32,7 +32,7 @@ function Login() {
           Password:
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
         </label>
-        <input type="submit" value="Submit" />
+        <button type="submit">Submit</button>
       </form>
     </div>
   );
