@@ -3,7 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
 const db = require('../utils/firestore');
 const User = db.collection('users');
-
+const jwt = require('jsonwebtoken');
 
 passport.use(
   new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
@@ -51,7 +51,9 @@ module.exports = (app) => {
           return next(err);
         }
 
-        return res.status(200).json({ success: true, user });
+        const token = jwt.sign({ username: user.id }, process.env.JWT_SECRET);
+
+        return res.status(200).json({ success: true, user, token });
       });
     })(req, res, next);
   });
