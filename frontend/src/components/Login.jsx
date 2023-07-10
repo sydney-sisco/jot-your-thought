@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useLocation } from "wouter";
+import { initiateSocket } from "../utils/socket";
 
-function Login() {
+function Login({ setToken }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [location, setLocation] = useLocation();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,6 +20,17 @@ function Login() {
       .then(res => {
         if (res.status === 200) {
           // Handle successful login here, such as redirecting to main page
+          console.log("Login successful");
+          console.log(res.data);
+
+          // store token in local storage
+          setToken(res.data.token);
+
+          // initiate socket connection
+          initiateSocket(res.data.token);
+
+          // redirect to main page
+          setLocation("/");
         }
       });
   }
