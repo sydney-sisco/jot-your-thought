@@ -1,0 +1,21 @@
+.thought {
+  display: flex;
+  flex-direction: column;
+}
+
+.timestamp {
+  text-align: end;
+  font-size: 0.75rem;
+}
+
+.buttons {
+  text-align: end;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.buttons > button {
+  margin-left: 1rem;
+  max-width: 75px;
+  font-size: .75rem;
+}

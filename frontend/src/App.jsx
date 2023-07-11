@@ -34,6 +34,11 @@ function App() {
     loadThoughts();
   }, []);
 
+  const refreshThoughtsFromIndexedDb = async () => {
+    const updatedThoughts = await db.thoughts.toArray();
+    setThoughts(updatedThoughts);
+  };
+
   const addThought = async (input) => {
 
     const timestamp = new Date().toISOString();
@@ -51,6 +56,23 @@ function App() {
 
     const updatedThoughts = await db.thoughts.toArray();
     setThoughts(updatedThoughts);
+  };
+
+  const editThought = async (id, updatedThought) => {
+    console.log('edit thought: ', id, updatedThought);
+    await db.thoughts.update(id, updatedThought)
+    refreshThoughtsFromIndexedDb();
+
+    // TODO: send update to server
+  };
+
+  const deleteThought = async (id) => {
+    console.log('delete thought: ', id);
+    await db.thoughts.delete(id);
+    console.log('thought deleted');
+    refreshThoughtsFromIndexedDb();
+
+    // TODO: send delete to server
   };
 
   return (
@@ -80,8 +102,14 @@ function App() {
         <Register />
       </Route>
       <Route path="/">
-        <Jot addThought={addThought} />
-        <Thoughts thoughts={thoughts} />
+        <Jot
+          addThought={addThought}
+        />
+        <Thoughts
+          thoughts={thoughts}
+          editThought={editThought}
+          deleteThought={deleteThought}
+        />
       </Route>
       <SocketTest />
     </>
