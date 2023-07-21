@@ -1,32 +1,44 @@
 import { useState, useEffect } from 'react';
-import { socket } from '../utils/socket';
+import { ConnectionState } from './ConnectionState';
 
-export function SocketTest() {
+export function SocketTest({ socket }) {
+  const [status, setStatus] = useState(null);
   const [socketResponse, setSocketResponse] = useState('')
 
   const testSocket = () => {
-    socket.emit("ping");
+    if (socket) {
+      socket.emit("ping");
+    }
   }
 
   useEffect(() => {
-    function onPingEvent(value) {
-      console.log(value);
-      setSocketResponse(value);
+    setSocketResponse('');
+    if (socket) {
+      socket.on('connect', () => setStatus('Connected'));
+      socket.on('disconnect', () => setStatus('Disconnected'));
+
+      function onPingEvent(value) {
+        console.log(value);
+        setSocketResponse(value);
+      }
+
+      socket.on('pong', onPingEvent);
+      testSocket();
+
+      // Clean up when component unmounts
+      return () => {
+        socket.off('connect');
+        socket.off('disconnect');
+        socket.off('pong', onPingEvent);
+      };
     }
-
-    socket.on('pong', onPingEvent);
-
-    testSocket();
-
-    return () => {
-      socket.off('pong', onPingEvent);
-    };
-  }, []);
+  }, [socket]);
 
   return (
     <div>
       <button onClick={testSocket}>test socket connection</button>
       <p>{socketResponse}</p>
+      <ConnectionState isConnected={status === 'Connected'} />
     </div>
   );
 };

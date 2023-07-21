@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getSocket } from './utils/socket'
+import { getSocket, initiateSocket, disconnectSocket } from './utils/socket'
 import futureLogo from '/future.svg'
 import './App.css'
 import Dexie from 'dexie';
@@ -25,6 +25,18 @@ function App() {
   const { deviceId } = usePersistence();
   const [thoughts, setThoughts] = useState([]);
   const [token, setToken] = useLocalStorage("token", null);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    console.log('App token changed: ', token);
+    if (token) {
+      initiateSocket(token);
+      setSocket(getSocket());
+    } else {
+      disconnectSocket();
+      setSocket(null);
+    }
+  }, [token]);
 
   useEffect(() => {
     const loadThoughts = async () => {
@@ -63,7 +75,8 @@ function App() {
     await db.thoughts.update(id, updatedThought)
     refreshThoughtsFromIndexedDb();
 
-    // TODO: send update to server
+    // send update to server
+    getSocket().emit("edit thought", updatedThought);
   };
 
   const deleteThought = async (id) => {
@@ -72,7 +85,8 @@ function App() {
     console.log('thought deleted');
     refreshThoughtsFromIndexedDb();
 
-    // TODO: send delete to server
+    // send delete to server
+    getSocket().emit("delete thought", id);
   };
 
   return (
@@ -81,6 +95,7 @@ function App() {
         <a><img src={futureLogo} className="logo" alt="future logo" /></a>
       </Link>
       <h1>Jot Your Thought</h1>
+      <SocketTest socket={socket} />
       {token ?
       <>
         <Logout setToken={setToken} />
@@ -111,7 +126,6 @@ function App() {
           deleteThought={deleteThought}
         />
       </Route>
-      <SocketTest />
     </>
   )
 }

@@ -11,7 +11,9 @@ export const initiateSocket = (token) => {
 };
 
 export const disconnectSocket = () => {
-  socket.disconnect();
+  if (socket) {
+    socket.disconnect();
+  }
 };
 
 export const getSocket = () => socket;

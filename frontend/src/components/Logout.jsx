@@ -11,9 +11,6 @@ function Logout({ setToken }) {
     // remove token from local storage
     setToken(null);
 
-    // disconnect socket
-    disconnectSocket();
-
     // redirect to login page
     setLocation("/login");
   }
