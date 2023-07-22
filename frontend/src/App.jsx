@@ -30,7 +30,7 @@ function App() {
   useEffect(() => {
     console.log('App token changed: ', token);
     if (token) {
-      initiateSocket(token);
+      initiateSocket(token, setToken);
       setSocket(getSocket());
     } else {
       disconnectSocket();

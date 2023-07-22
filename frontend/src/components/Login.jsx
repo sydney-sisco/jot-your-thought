@@ -27,7 +27,7 @@ function Login({ setToken }) {
           setToken(res.data.token);
 
           // initiate socket connection
-          initiateSocket(res.data.token);
+          initiateSocket(res.data.token, setToken);
 
           // redirect to main page
           setLocation("/");

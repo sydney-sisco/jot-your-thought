@@ -2,7 +2,7 @@ import io from 'socket.io-client';
 
 let socket;
 
-export const initiateSocket = (token) => {
+export const initiateSocket = (token, setToken) => {
   socket = io({
     transports: ["websocket"],
     query: {
@@ -12,7 +12,8 @@ export const initiateSocket = (token) => {
   
   socket.on('connect_error', (error) => {
     if (error.message === 'Token expired') {
-      console.log('token expired');
+      console.log('token expired, logging out');
+      setToken(null);
     }
   });
 };
