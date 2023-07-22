@@ -16,6 +16,8 @@ export const initiateSocket = (token, setToken) => {
       setToken(null);
     }
   });
+
+  return socket;
 };
 
 export const disconnectSocket = () => {
