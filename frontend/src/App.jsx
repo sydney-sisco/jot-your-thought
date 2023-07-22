@@ -30,8 +30,8 @@ function App() {
   useEffect(() => {
     console.log('App token changed: ', token);
     if (token) {
-      initiateSocket(token, setToken);
-      setSocket(getSocket());
+      const socket = initiateSocket(token, setToken);
+      setSocket(socket);
     } else {
       disconnectSocket();
       setSocket(null);
@@ -56,18 +56,20 @@ function App() {
     const timestamp = new Date().toISOString();
     
     const thought = {
-      id: timestamp,
+      id: undefined,
       text: input.trim(),
       deviceId: deviceId,
       timestamp: timestamp,
     };
     
-    await db.thoughts.add(thought);
-
-    getSocket().emit("new thought", thought);
-
-    const updatedThoughts = await db.thoughts.toArray();
-    setThoughts(updatedThoughts);
+    socket.emit('new thought', thought, async (response) => {
+      if (response.success) {
+        await db.thoughts.add({...thought, id: response.thoughtId});
+        setThoughts(await db.thoughts.toArray());
+      } else {
+        console.error('There was an error creating the thought');
+      }
+    });
   };
 
   const editThought = async (id, updatedThought) => {

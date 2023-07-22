@@ -23,18 +23,18 @@ const addThought = async (thoughtData) => {
 // saves a thought to a user's collection
 const saveThought = async (thoughtData, userId) => {
   try {
-    const { id, text, deviceId, timestamp } = thoughtData;
-    const thoughtRef = firestore
+    const { text, deviceId, timestamp } = thoughtData;
+    const thoughtsCollectionRef = firestore
       .collection('users')
       .doc(userId)
-      .collection('thoughts')
-      .doc(id);
-    await thoughtRef.set({
+      .collection('thoughts');
+    const docRef = await thoughtsCollectionRef.add({
       text,
       deviceId,
       timestamp,
     });
-    console.log('Thought added successfully');
+    console.log('Thought added successfully with ID:', docRef.id);
+    return docRef.id;
   } catch (error) {
     console.error('Error adding thought:', error);
   }
@@ -95,10 +95,15 @@ module.exports = (io) => {
   console.log('thoughts.js module loaded.')
 
   io.on('connection', (socket) => {
-    socket.on('new thought', (thought) => {
+    socket.on('new thought', async (thought, ack) => {
       console.log('new thought', thought);
-      // addThought(thought);
-      saveThought(thought, socket.decoded.username);
+      try {
+        const thoughtId = await saveThought(thought, socket.decoded.username);
+        ack({ success: true, thoughtId });
+      } catch (error) {
+        console.error('Error adding thought:', error);
+        ack({ success: false });
+      }
     });
 
     socket.on('delete thought', (thoughtId) => {
