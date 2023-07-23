@@ -51,7 +51,7 @@ module.exports = (app) => {
           return next(err);
         }
 
-        const token = jwt.sign({ username: user.id }, process.env.JWT_SECRET);
+        const token = jwt.sign({ username: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
         return res.status(200).json({ success: true, user, token });
       });
