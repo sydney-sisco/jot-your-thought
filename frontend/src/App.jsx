@@ -17,6 +17,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { useReadLocalStorage } from './hooks/useReadLocalStorage';
 
 import { db } from './utils/db';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
 
@@ -154,6 +155,8 @@ function App() {
         <Jot
           addThought={addThought}
         />
+        <button onClick={syncLatest}>Sync from remote</button>
+        <p>Last sync time: {lastSyncTime}</p>
         <Thoughts
           thoughts={thoughts}
           editThought={editThought}
@@ -161,12 +164,11 @@ function App() {
         />
       </Route>
       <button onClick={refreshThoughtsFromIndexedDb}>Refresh</button>
-      <button onClick={syncLatest}>Sync from remote</button>
       <button onClick={deleteDB}>Delete DB</button>
       <button onClick={resetLastSyncTime}>Reset Last Sync Time</button>
-      <p>Last sync time: {lastSyncTime}</p>
       <p>Device Id: {deviceId}</p>
       <SocketTest socket={socket} />
+      <ScrollToTop />
     </>
   )
 }
