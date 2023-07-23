@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { getSocket, initiateSocket, disconnectSocket } from './utils/socket'
 import futureLogo from '/future.svg'
 import './App.css'
-import Dexie from 'dexie';
 import { usePersistence } from './hooks/usePersistence';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -17,14 +16,14 @@ import { SocketTest } from './components/SocketTest';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useReadLocalStorage } from './hooks/useReadLocalStorage';
 
-const db = new Dexie("ThoughtsDB");
-db.version(1).stores({ thoughts: "++id,text" });
+import { db } from './utils/db';
 
 function App() {
 
   const { deviceId } = usePersistence();
   const [thoughts, setThoughts] = useState([]);
   const [token, setToken] = useLocalStorage("token", null);
+  const [lastSyncTime, setLastSyncTime] = useLocalStorage("lastSyncTime.thoughts", '1970-01-01T00:00:00.000Z');
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -47,25 +46,58 @@ function App() {
   }, []);
 
   const refreshThoughtsFromIndexedDb = async () => {
-    const updatedThoughts = await db.thoughts.toArray();
+    const updatedThoughts = await db.thoughts.orderBy('createdAt').toArray();
     setThoughts(updatedThoughts);
   };
 
-  const addThought = async (input) => {
+  // sync from remote
+  const syncLatest = async () => {
+    socket.emit('get thoughts', lastSyncTime, async (response) => {
+      if (response.success) {
+        console.log('thoughts array: ', response.data.thoughts);
 
-    const timestamp = new Date().toISOString();
+        // update last sync time
+        setLastSyncTime(response.data.syncTime);
+
+        // update thoughts
+        await db.thoughts.bulkPut(response.data.thoughts);
+
+        // refresh thoughts
+        refreshThoughtsFromIndexedDb();
+
+      } else {
+        console.error('Error syncing thoughts:', response.error);
+      }
+    });
+  };
+
+  // temporary function during migration to new data structure
+  const deleteDB = async () => {
+    await db.delete();
+    console.log('db deleted');
+  };
+
+  // temporary function during migration to new data structure
+  const resetLastSyncTime = () => {
+    setLastSyncTime('1970-01-01T00:00:00.000Z');
+  };
+
+  const addThought = async (input) => {
     
     const thought = {
       id: undefined,
       text: input.trim(),
       deviceId: deviceId,
-      timestamp: timestamp,
     };
     
     socket.emit('new thought', thought, async (response) => {
       if (response.success) {
-        await db.thoughts.add({...thought, id: response.thoughtId});
-        setThoughts(await db.thoughts.toArray());
+
+        await db.thoughts.add({
+          ...thought,
+          ...response.thoughtData,
+        });
+        refreshThoughtsFromIndexedDb();
       } else {
         console.error('There was an error creating the thought');
       }
@@ -97,7 +129,7 @@ function App() {
         <a><img src={futureLogo} className="logo" alt="future logo" /></a>
       </Link>
       <h1>Jot Your Thought</h1>
-      <SocketTest socket={socket} />
+
       {token ?
       <>
         <Logout setToken={setToken} />
@@ -128,6 +160,12 @@ function App() {
           deleteThought={deleteThought}
         />
       </Route>
+      <button onClick={refreshThoughtsFromIndexedDb}>Refresh</button>
+      <button onClick={syncLatest}>Sync from remote</button>
+      <button onClick={deleteDB}>Delete DB</button>
+      <button onClick={resetLastSyncTime}>Reset Last Sync Time</button>
+      <p>Last sync time: {lastSyncTime}</p>
+      <SocketTest socket={socket} />
     </>
   )
 }
