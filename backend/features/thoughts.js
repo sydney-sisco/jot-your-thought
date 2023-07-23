@@ -22,8 +22,12 @@ const addThought = async (thoughtData) => {
 
 // saves a thought to a user's collection
 const saveThought = async (thoughtData, userId) => {
+
+  // generates a UTC timestamp in the format of YYYY-MM-DDTHH:MM:SSZ
+  const createdAt = new Date().toISOString();
+
   try {
-    const { text, deviceId, timestamp } = thoughtData;
+    const { text, deviceId } = thoughtData; // thought destructure here
     const thoughtsCollectionRef = firestore
       .collection('users')
       .doc(userId)
@@ -31,10 +35,16 @@ const saveThought = async (thoughtData, userId) => {
     const docRef = await thoughtsCollectionRef.add({
       text,
       deviceId,
-      timestamp,
+      createdAt: createdAt,
+      updatedAt: createdAt,
     });
     console.log('Thought added successfully with ID:', docRef.id);
-    return docRef.id;
+    return {
+      ...thoughtData,
+      id: docRef.id,
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    };
   } catch (error) {
     console.error('Error adding thought:', error);
   }
@@ -57,6 +67,10 @@ const deleteThought = async (thoughtId, userId) => {
 
 // edit a thought
 const editThought = async (thoughtData, userId) => {
+  
+  // generates a UTC timestamp in the format of YYYY-MM-DDTHH:MM:SSZ
+  const updatedAt = new Date().toISOString();
+
   try {
     const { id, text } = thoughtData;
     const thoughtRef = firestore
@@ -66,8 +80,10 @@ const editThought = async (thoughtData, userId) => {
       .doc(id);
     await thoughtRef.update({
       text,
+      updatedAt,
     });
     console.log('Thought edited successfully');
+    // TODO: return updated thought or just timestamp?
   } catch (error) {
     console.error('Error editing thought:', error);
   }
@@ -91,6 +107,28 @@ const getThoughtsByDeviceId = async (deviceId) => {
   }
 };
 
+const getThoughtsByDateModified = async (userId, lastSyncTime) => {
+  try {
+    const thoughtsRef = firestore
+      .collection('users')
+      .doc(userId)
+      .collection('thoughts')
+      .where('updatedAt', '>', lastSyncTime)
+      .orderBy('updatedAt', 'desc'); // Sorting by creation time
+    const snapshot = await thoughtsRef.get();
+    const thoughts = [];
+    snapshot.forEach((doc) => {
+      thoughts.push({
+        ...doc.data(),
+        id: doc.id,
+      });
+    });
+    return thoughts;
+  } catch (error) {
+    console.error('Error retrieving thoughts:', error);
+  }
+};
+
 module.exports = (io) => {
   console.log('thoughts.js module loaded.')
 
@@ -98,8 +136,8 @@ module.exports = (io) => {
     socket.on('new thought', async (thought, ack) => {
       console.log('new thought', thought);
       try {
-        const thoughtId = await saveThought(thought, socket.decoded.username);
-        ack({ success: true, thoughtId });
+        const thoughtData = await saveThought(thought, socket.decoded.username);
+        ack({ success: true, thoughtData });
       } catch (error) {
         console.error('Error adding thought:', error);
         ack({ success: false });
@@ -114,6 +152,26 @@ module.exports = (io) => {
     socket.on('edit thought', (thought) => {
       console.log('edit thought', thought);
       editThought(thought, socket.decoded.username);
+    });
+
+    socket.on('get thoughts', async (lastSyncTime, ack) => {
+      console.log('get thoughts', lastSyncTime);
+      try {
+        const thoughts = await getThoughtsByDateModified(socket.decoded.username, lastSyncTime);
+
+        // generates a UTC timestamp in the format of YYYY-MM-DDTHH:MM:SSZ
+        const syncTime = new Date().toISOString();
+
+        const data = {
+          thoughts,
+          syncTime,
+        };
+
+        ack({ success: true, data });
+      } catch (error) {
+        console.error('Error retrieving thoughts:', error);
+        ack({ success: false });
+      }
     });
 
   });
