@@ -165,6 +165,7 @@ function App() {
       <button onClick={deleteDB}>Delete DB</button>
       <button onClick={resetLastSyncTime}>Reset Last Sync Time</button>
       <p>Last sync time: {lastSyncTime}</p>
+      <p>Device Id: {deviceId}</p>
       <SocketTest socket={socket} />
     </>
   )
