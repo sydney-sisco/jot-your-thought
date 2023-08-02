@@ -1,12 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "wouter";
 import { initiateSocket } from "../utils/socket";
 
-function Login({ setToken }) {
+function Login({ token, setToken }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    console.log("Login token changed in Login: ", token);
+    if (token) {
+      // redirect to main page
+      setLocation("/");
+    }
+  }, [token]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -28,9 +36,6 @@ function Login({ setToken }) {
 
           // initiate socket connection
           initiateSocket(res.data.token, setToken);
-
-          // redirect to main page
-          setLocation("/");
         }
       });
   }

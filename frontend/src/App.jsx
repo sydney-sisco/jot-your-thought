@@ -10,7 +10,7 @@ import Logout from './components/Logout';
 import { Jot } from './components/Jot';
 import { Thoughts } from './components/Thoughts';
 
-import { Link, Route } from "wouter";
+import { Link, Route, Redirect } from "wouter";
 import { SocketTest } from './components/SocketTest';
 
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -134,30 +134,37 @@ function App() {
       :
       <>
         <Link href="/login">
-          <a className="link">Login</a>
+          <a className="link"><button type="submit">Login</button></a>
         </Link>
         <Link href="/register">
-          <a className="link">Register</a>
+          <a className="link"><button type="submit">Register</button></a>
         </Link>
       </>
       }
       <Route path="/login">
-        <Login setToken={setToken} />
+        <Login token={token} setToken={setToken} />
       </Route>
       <Route path="/register">
         <Register />
       </Route>
       <Route path="/">
-        <Jot
-          addThought={addThought}
-        />
-        <button onClick={syncLatest}>Sync from remote</button>
-        <p>Last sync time: {lastSyncTime}</p>
-        <Thoughts
-          thoughts={thoughts}
-          editThought={editThought}
-          deleteThought={deleteThought}
-        />
+        {!token 
+        ? 
+          <Redirect to="/login" />
+        :
+          <>  
+            <Jot
+              addThought={addThought}
+            />
+            <button onClick={syncLatest}>Sync from remote</button>
+            <p>Last sync time: {lastSyncTime}</p>
+            <Thoughts
+              thoughts={thoughts}
+              editThought={editThought}
+              deleteThought={deleteThought}
+            />
+          </>
+        }
       </Route>
       <button onClick={refreshThoughtsFromIndexedDb}>Refresh</button>
       <button onClick={deleteDB}>Delete DB</button>
