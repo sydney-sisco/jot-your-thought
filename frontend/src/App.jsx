@@ -39,11 +39,7 @@ function App() {
   }, [token]);
 
   useEffect(() => {
-    const loadThoughts = async () => {
-      const data = await db.thoughts.toArray();
-      setThoughts(data);
-    };
-    loadThoughts();
+    refreshThoughtsFromIndexedDb();
   }, []);
 
   const refreshThoughtsFromIndexedDb = async () => {
