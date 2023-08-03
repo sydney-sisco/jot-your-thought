@@ -19,6 +19,10 @@ body {
   margin: 0 auto;
 }
 
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cff);
+}
+
 h1 {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
@@ -82,4 +86,37 @@ li {
   border-radius: 4px;
   /* background-color: #f9f9f9; */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+
+@media (prefers-color-scheme: dark) {
+  h1 {
+    color: #fff;
+  }
+
+  body {
+    background-color: #333;
+  }
+
+  .card {
+    background-color: #444;
+    color: #fff;
+  }
+
+  button {
+    background-color: #6f9e5f;
+  }
+
+  li {
+    background-color: #444;
+    color: #fff;
+  }
+
+  .logo {
+    filter: drop-shadow(0 0 2em #646cff);
+  }
+
+  .logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
 }
