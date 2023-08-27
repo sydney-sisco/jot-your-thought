@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { getSocket, initiateSocket, disconnectSocket } from './utils/socket'
-import futureLogo from '/future.svg'
 import './App.css'
 import { usePersistence } from './hooks/usePersistence';
 import Login from './components/Login';
@@ -14,10 +13,10 @@ import { Link, Route, Redirect } from "wouter";
 import { SocketTest } from './components/SocketTest';
 
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { useReadLocalStorage } from './hooks/useReadLocalStorage';
 
 import { db } from './utils/db';
 import ScrollToTop from './components/ScrollToTop';
+import Logo from './components/Logo';
 
 function App() {
 
@@ -122,9 +121,7 @@ function App() {
 
   return (
     <>
-      <Link href="/">
-        <a><img src={futureLogo} className="logo" alt="future logo" /></a>
-      </Link>
+      <Logo />
       <h1>Jot Your Thought</h1>
 
       {token ?
