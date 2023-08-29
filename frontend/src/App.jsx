@@ -27,7 +27,7 @@ function App() {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    console.log('App token changed: ', token);
+    console.log('App() token changed: ', token);
     if (token) {
       const socket = initiateSocket(token, setToken);
       setSocket(socket);
@@ -38,10 +38,12 @@ function App() {
   }, [token]);
 
   useEffect(() => {
+    console.log('App() useEffect triggering refresh of thoughts from indexeddb');
     refreshThoughtsFromIndexedDb();
   }, []);
 
   const refreshThoughtsFromIndexedDb = async () => {
+    console.log('refreshThoughtsFromIndexedDb() call');
     const updatedThoughts = await db.thoughts.orderBy('createdAt').toArray();
     setThoughts(updatedThoughts);
   };
@@ -119,31 +121,35 @@ function App() {
     getSocket().emit("delete thought", id);
   };
 
+  function Navigation() {
+    // const { token, setToken } = useAuth();
+    
+    return token ? (
+      <Logout setToken={setToken} />
+    ) :
+    (
+      <>
+        <Link href="/login"><a className="link"><button type="submit">Login</button></a></Link>
+        <Link href="/register"><a className="link"><button type="submit">Register</button></a></Link>
+      </>
+    )
+  }
+
   return (
     <>
       <Logo />
       <h1>Jot Your Thought</h1>
 
-      {token ?
-      <>
-        <Logout setToken={setToken} />
-      </>
-      :
-      <>
-        <Link href="/login">
-          <a className="link"><button type="submit">Login</button></a>
-        </Link>
-        <Link href="/register">
-          <a className="link"><button type="submit">Register</button></a>
-        </Link>
-      </>
-      }
+      <Navigation />
+      
       <Route path="/login">
         <Login token={token} setToken={setToken} />
       </Route>
+
       <Route path="/register">
         <Register />
       </Route>
+
       <Route path="/">
         {!token 
         ? 

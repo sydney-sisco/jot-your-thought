@@ -1,19 +1,13 @@
-import { useLocation } from "wouter";
-import { disconnectSocket } from "../utils/socket";
+import React from 'react';
+import useAuth from '../hooks/useAuth';
 
-function Logout({ setToken }) {
-
-  const [location, setLocation] = useLocation();
+function Logout() {
+  const { logout } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // remove token from local storage
-    setToken(null);
-
-    // redirect to login page
-    setLocation("/login");
-  }
+    logout();
+  };
 
   return (
     <form onSubmit={handleSubmit}>
